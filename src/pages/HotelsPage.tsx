@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import * as HotelService from "../services/hotel.service";
@@ -30,9 +31,57 @@ const HotelsPage: React.FC = () => {
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [rooms, setRooms] = useState(1);
+  const [searchParams] = useSearchParams();
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim() || !checkInDate || !checkOutDate) {
+  useEffect(() => {
+    const destinationCode = searchParams.get("destinationCode");
+    const checkIn = searchParams.get("checkIn");
+    const checkOut = searchParams.get("checkOut");
+    const adultsParam = searchParams.get("adults");
+    const childrenParam = searchParams.get("children");
+    const roomsParam = searchParams.get("rooms");
+
+    if (destinationCode && checkIn && checkOut) {
+      // Create a temporary state to avoid race conditions
+      const newSearchParams = {
+        destination: destinationCode,
+        checkInDate: new Date(checkIn.replace(/-/g, "/")),
+        checkOutDate: new Date(checkOut.replace(/-/g, "/")),
+        adults: adultsParam ? parseInt(adultsParam, 10) : 2,
+        children: childrenParam ? parseInt(childrenParam, 10) : 0,
+        rooms: roomsParam ? parseInt(roomsParam, 10) : 1,
+      };
+
+      // Set the state
+      setSearchTerm(newSearchParams.destination);
+      setCheckInDate(newSearchParams.checkInDate);
+      setCheckOutDate(newSearchParams.checkOutDate);
+      setAdults(newSearchParams.adults);
+      setChildren(newSearchParams.children);
+      setRooms(newSearchParams.rooms);
+
+      // Trigger search with the new state
+      handleSearch(newSearchParams);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  const handleSearch = async (params?: {
+    destination: string;
+    checkInDate: Date;
+    checkOutDate: Date;
+    adults: number;
+    children: number;
+    rooms: number;
+  }) => {
+    const searchDestination = params ? params.destination : searchTerm;
+    const searchCheckIn = params ? params.checkInDate : checkInDate;
+    const searchCheckOut = params ? params.checkOutDate : checkOutDate;
+    const searchAdults = params ? params.adults : adults;
+    const searchChildren = params ? params.children : children;
+    const searchRooms = params ? params.rooms : rooms;
+
+    if (!searchDestination.trim() || !searchCheckIn || !searchCheckOut) {
       setError(
         "Please enter a destination and select check-in/check-out dates."
       );
@@ -44,15 +93,20 @@ const HotelsPage: React.FC = () => {
     setHotels([]);
 
     try {
-      const formatDate = (date: Date) => date.toISOString().split("T")[0];
+      const formatDate = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
 
       const response = await HotelService.getHotels(
-        searchTerm,
-        formatDate(checkInDate),
-        formatDate(checkOutDate),
-        adults,
-        children,
-        rooms
+        searchDestination,
+        formatDate(searchCheckIn),
+        formatDate(searchCheckOut),
+        searchAdults,
+        searchChildren,
+        searchRooms
       );
       if (response.data && response.data.hotels) {
         setHotels(response.data.hotels);
@@ -91,10 +145,19 @@ const HotelsPage: React.FC = () => {
             <div className="flex gap-2">
               <DatePicker
                 selected={checkInDate}
-                onChange={(date) => setCheckInDate(date || undefined)}
+                onChange={(date: Date | null) => {
+                  const newCheckIn = date || new Date();
+                  setCheckInDate(newCheckIn);
+                  if (checkOutDate && newCheckIn >= checkOutDate) {
+                    const newCheckOut = new Date(newCheckIn);
+                    newCheckOut.setDate(newCheckIn.getDate() + 1);
+                    setCheckOutDate(newCheckOut);
+                  }
+                }}
                 selectsStart
                 startDate={checkInDate}
                 endDate={checkOutDate}
+                minDate={new Date()}
                 className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 placeholderText="Check-in"
               />
@@ -104,7 +167,11 @@ const HotelsPage: React.FC = () => {
                 selectsEnd
                 startDate={checkInDate}
                 endDate={checkOutDate}
-                minDate={checkInDate}
+                minDate={
+                  checkInDate
+                    ? new Date(checkInDate.getTime() + 86400000)
+                    : new Date()
+                }
                 className="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                 placeholderText="Check-out"
               />
@@ -122,7 +189,7 @@ const HotelsPage: React.FC = () => {
           </div>
           <div className="md:col-span-1 flex items-end">
             <button
-              onClick={handleSearch}
+              onClick={() => handleSearch()}
               className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               disabled={loading}
             >
