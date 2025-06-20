@@ -16,6 +16,7 @@ import OriginalBackpackersPage from "./pages/hotels/OriginalBackpackersPage";
 import OsakaUkiyoeRyokanPage from "./pages/hotels/OsakaUkiyoeRyokanPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import PrivateRoute from "./components/auth/PrivateRoute";
+import BookingPage from "./pages/BookingPage";
 
 const App: React.FC = () => {
   return (
@@ -26,6 +27,19 @@ const App: React.FC = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/hotels" element={<HotelsPage />} />
           <Route path="/flights" element={<FlightsPage />} />
+          <Route path="/hotels/:id" element={<HotelDetailPage />} />
+
+          {/* Protected Routes */}
+          <Route element={<PrivateRoute />}>
+            <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/booking" element={<BookingPage />} />
+          </Route>
+
+          {/* Operator Routes */}
+          <Route element={<OperatorRoute />}>
+            <Route path="/add-hotel" element={<AddHotelPage />} />
+          </Route>
+
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/hotels/mokkoan" element={<MokkoanPage />} />
@@ -45,13 +59,6 @@ const App: React.FC = () => {
             path="/hotels/osaka-ukiyoe-ryokan"
             element={<OsakaUkiyoeRyokanPage />}
           />
-          <Route path="/hotels/:id" element={<HotelDetailPage />} />
-          <Route path="/favorites" element={<PrivateRoute />}>
-            <Route path="/favorites" element={<FavoritesPage />} />
-          </Route>
-          <Route path="/add-hotel" element={<OperatorRoute />}>
-            <Route path="/add-hotel" element={<AddHotelPage />} />
-          </Route>
         </Routes>
       </main>
     </Router>

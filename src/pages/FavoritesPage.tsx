@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getFavorites } from "../services/favorite.service";
 import { Hotel } from "../types/types";
 
@@ -23,6 +23,7 @@ const getHotelLink = (hotel: Hotel): string => {
 const FavoritesPage: React.FC = () => {
   const [favorites, setFavorites] = useState<Hotel[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchFavorites = async () => {
@@ -38,6 +39,10 @@ const FavoritesPage: React.FC = () => {
 
     fetchFavorites();
   }, []);
+
+  const handleBookNow = (hotel: Hotel) => {
+    navigate("/booking", { state: { hotel } });
+  };
 
   if (loading) {
     return (
@@ -78,7 +83,10 @@ const FavoritesPage: React.FC = () => {
                   >
                     View Details
                   </Link>
-                  <button className="bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600 transition-colors">
+                  <button
+                    onClick={() => handleBookNow(hotel)}
+                    className="bg-green-500 text-white font-bold py-2 px-4 rounded-md hover:bg-green-600 transition-colors"
+                  >
                     Book Now
                   </button>
                 </div>
