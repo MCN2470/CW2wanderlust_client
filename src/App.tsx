@@ -17,6 +17,7 @@ import OsakaUkiyoeRyokanPage from "./pages/hotels/OsakaUkiyoeRyokanPage";
 import FavoritesPage from "./pages/FavoritesPage";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import BookingPage from "./pages/BookingPage";
+import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 
 const App: React.FC = () => {
   return (
@@ -33,6 +34,10 @@ const App: React.FC = () => {
           <Route element={<PrivateRoute />}>
             <Route path="/favorites" element={<FavoritesPage />} />
             <Route path="/booking" element={<BookingPage />} />
+            <Route
+              path="/booking-confirmation"
+              element={<BookingConfirmationPage />}
+            />
           </Route>
 
           {/* Operator Routes */}

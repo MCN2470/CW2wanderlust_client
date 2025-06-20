@@ -65,9 +65,22 @@ const BookingPage: React.FC = () => {
         add_on_car: addToStay.car,
         add_on_taxi: addToStay.taxi,
       };
-      await BookingService.createBooking(bookingData);
-      alert("Booking successful!");
-      navigate("/");
+      const response = await BookingService.createBooking(bookingData);
+
+      const bookingDetailsForTranscript = {
+        ...bookingData,
+        bookingId: response.data.bookingId,
+        firstName,
+        lastName,
+        email,
+        adults,
+        children,
+        rooms,
+      };
+
+      navigate("/booking-confirmation", {
+        state: { bookingDetails: bookingDetailsForTranscript, hotel: hotel },
+      });
     } catch (err) {
       setError("There was an error creating your booking. Please try again.");
     } finally {
