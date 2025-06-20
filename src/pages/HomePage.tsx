@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getAllHotels } from "../services/hotel.service";
 import { Hotel } from "../types/types";
+import { getCurrentUser } from "../services/auth.service";
+import {
+  getFavorites,
+  addFavorite,
+  removeFavorite,
+} from "../services/favorite.service";
 
 const destinations = [
   {
@@ -41,20 +47,52 @@ const destinations = [
   },
 ];
 
+// Temporarily moved getHotelLink inside HomePage.tsx to avoid import issues
+const getHotelLink = (hotel: Hotel): string => {
+  switch (hotel.name) {
+    case "Mokkoan":
+      return "/hotels/mokkoan";
+    case "The Langham Hong Kong":
+      return "/hotels/the-langham-hong-kong";
+    case "Star Hostel Taipei Main Station":
+      return "/hotels/star-hostel-taipei-main-station";
+    case "Original Backpackers":
+      return "/hotels/original-backpackers";
+    case "Osaka Ukiyoe Ryokan":
+      return "/hotels/osaka-ukiyoe-ryokan";
+    default:
+      return `/hotels/${hotel.id}`;
+  }
+};
+
 const HomePage: React.FC = () => {
   const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [favorites, setFavorites] = useState<number[]>([]);
+  const [destination, setDestination] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [rooms, setRooms] = useState(1);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchHotels = async () => {
+    const fetchInitialData = async () => {
       try {
-        const res = await getAllHotels();
-        setHotels(res.data.slice(0, 5)); // Take the first 5 for featured
+        const hotelResponse = await getAllHotels();
+        setHotels(hotelResponse.data);
+
+        const user = getCurrentUser();
+        if (user) {
+          const favoritesResponse = await getFavorites();
+          setFavorites(favoritesResponse.data.map((fav: Hotel) => fav.id));
+        }
       } catch (error) {
-        console.error("Error fetching hotels:", error);
+        console.error("Error fetching initial data:", error);
       }
     };
 
-    fetchHotels();
+    fetchInitialData();
   }, []);
 
   const formatDate = (date: Date) => {
@@ -79,20 +117,25 @@ const HomePage: React.FC = () => {
     )}&adults=${adults}&children=${children}&rooms=${rooms}`;
   };
 
-  const getHotelLink = (hotel: any) => {
-    switch (hotel.name) {
-      case "Mokkoan":
-        return "/hotels/mokkoan";
-      case "The Langham Hong Kong":
-        return "/hotels/the-langham-hong-kong";
-      case "Star Hostel Taipei Main Station":
-        return "/hotels/star-hostel-taipei-main-station";
-      case "Original Backpackers":
-        return "/hotels/original-backpackers";
-      case "Osaka Ukiyoe Ryokan":
-        return "/hotels/osaka-ukiyoe-ryokan";
-      default:
-        return `/hotels/${hotel.id}`;
+  const handleFavoriteClick = async (hotelId: number) => {
+    const user = getCurrentUser();
+    if (!user) {
+      alert("Please log in to add hotels to your favorites.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      if (favorites.includes(hotelId)) {
+        await removeFavorite(hotelId);
+        setFavorites(favorites.filter((id) => id !== hotelId));
+      } else {
+        await addFavorite(hotelId);
+        setFavorites([...favorites, hotelId]);
+      }
+    } catch (error) {
+      console.error("Error updating favorites:", error);
+      alert("There was an error updating your favorites. Please try again.");
     }
   };
 
@@ -140,17 +183,22 @@ const HomePage: React.FC = () => {
               className="flex bg-white rounded-lg border border-gray-200 shadow-md overflow-hidden"
             >
               {/* Image Section */}
-              <div className="w-1/4 relative">
+              <div className="relative w-full lg:w-1/3">
                 <img
                   src={hotel.image_url}
                   alt={hotel.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-64 lg:h-full object-cover"
                 />
-                <button className="absolute top-3 left-3 bg-white rounded-full p-2 text-gray-700 hover:text-red-500 transition-colors duration-200">
+                <button
+                  className="absolute top-2 left-2 bg-white p-2 rounded-full shadow-md hover:bg-red-100 transition-colors"
+                  onClick={() => handleFavoriteClick(hotel.id)}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
+                    className="h-6 w-6 text-red-500"
+                    fill={
+                      favorites.includes(hotel.id) ? "currentColor" : "none"
+                    }
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
@@ -158,7 +206,7 @@ const HomePage: React.FC = () => {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                      d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"
                     />
                   </svg>
                 </button>

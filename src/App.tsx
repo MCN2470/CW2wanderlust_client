@@ -14,6 +14,8 @@ import TheLanghamHongKongPage from "./pages/hotels/TheLanghamHongKongPage";
 import StarHostelTaipeiMainStationPage from "./pages/hotels/StarHostelTaipeiMainStationPage";
 import OriginalBackpackersPage from "./pages/hotels/OriginalBackpackersPage";
 import OsakaUkiyoeRyokanPage from "./pages/hotels/OsakaUkiyoeRyokanPage";
+import FavoritesPage from "./pages/FavoritesPage";
+import PrivateRoute from "./components/auth/PrivateRoute";
 
 const App: React.FC = () => {
   return (
@@ -44,6 +46,9 @@ const App: React.FC = () => {
             element={<OsakaUkiyoeRyokanPage />}
           />
           <Route path="/hotels/:id" element={<HotelDetailPage />} />
+          <Route path="/favorites" element={<PrivateRoute />}>
+            <Route path="/favorites" element={<FavoritesPage />} />
+          </Route>
           <Route path="/add-hotel" element={<OperatorRoute />}>
             <Route path="/add-hotel" element={<AddHotelPage />} />
           </Route>

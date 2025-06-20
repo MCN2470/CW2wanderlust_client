@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import * as AuthService from "../services/auth.service";
+import { UserIcon } from "@heroicons/react/24/solid";
 
 interface User {
   username: string;
@@ -9,18 +10,27 @@ interface User {
 
 const Navbar: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = AuthService.getCurrentUser();
-    if (user) {
+    const updateUser = () => {
+      const user = AuthService.getCurrentUser();
       setCurrentUser(user);
-    }
+    };
+
+    window.addEventListener("authChange", updateUser);
+    updateUser(); // Initial check
+
+    return () => {
+      window.removeEventListener("authChange", updateUser);
+    };
   }, []);
 
   const handleLogout = () => {
     AuthService.logout();
     setCurrentUser(null);
+    setIsDropdownOpen(false);
     navigate("/login");
   };
 
@@ -46,12 +56,31 @@ const Navbar: React.FC = () => {
             </Link>
           )}
           {currentUser ? (
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Logout
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="mr-4 focus:outline-none flex items-center"
+              >
+                <UserIcon className="h-6 w-6 mr-1" />
+                {currentUser.username}
+              </button>
+              {isDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 text-black">
+                  <Link
+                    to="/favorites"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    My Favorites
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <>
               <Link to="/login" className="mr-4">

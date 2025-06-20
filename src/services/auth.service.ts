@@ -11,12 +11,14 @@ export const login = async (userData: any) => {
   const response = await axios.post(`${API_URL}/users/login`, userData);
   if (response.data.token) {
     localStorage.setItem("user", JSON.stringify(response.data));
+    window.dispatchEvent(new Event("authChange"));
   }
   return response.data;
 };
 
 export const logout = () => {
   localStorage.removeItem("user");
+  window.dispatchEvent(new Event("authChange"));
 };
 
 export const getCurrentUser = () => {
