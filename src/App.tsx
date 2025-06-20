@@ -18,6 +18,7 @@ import FavoritesPage from "./pages/FavoritesPage";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import BookingPage from "./pages/BookingPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
+import AdminPage from "./pages/AdminPage";
 
 const App: React.FC = () => {
   return (
@@ -31,13 +32,17 @@ const App: React.FC = () => {
           <Route path="/hotels/:id" element={<HotelDetailPage />} />
 
           {/* Protected Routes */}
-          <Route element={<PrivateRoute />}>
+          <Route path="/favorites" element={<PrivateRoute />}>
             <Route path="/favorites" element={<FavoritesPage />} />
+          </Route>
+          <Route path="/booking" element={<PrivateRoute />}>
             <Route path="/booking" element={<BookingPage />} />
-            <Route
-              path="/booking-confirmation"
-              element={<BookingConfirmationPage />}
-            />
+          </Route>
+          <Route path="/confirmation" element={<PrivateRoute />}>
+            <Route path="/confirmation" element={<BookingConfirmationPage />} />
+          </Route>
+          <Route path="/admin" element={<OperatorRoute />}>
+            <Route path="/admin" element={<AdminPage />} />
           </Route>
 
           {/* Operator Routes */}

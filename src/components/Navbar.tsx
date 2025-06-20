@@ -14,17 +14,10 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const updateUser = () => {
-      const user = AuthService.getCurrentUser();
+    const user = AuthService.getCurrentUser();
+    if (user) {
       setCurrentUser(user);
-    };
-
-    window.addEventListener("authChange", updateUser);
-    updateUser(); // Initial check
-
-    return () => {
-      window.removeEventListener("authChange", updateUser);
-    };
+    }
   }, []);
 
   const handleLogout = () => {
@@ -53,6 +46,14 @@ const Navbar: React.FC = () => {
           {currentUser && currentUser.role === "operator" && (
             <Link to="/add-hotel" className="mr-4">
               Add Hotel
+            </Link>
+          )}
+          {currentUser && currentUser.role === "operator" && (
+            <Link
+              to="/admin"
+              className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:text-white hover:bg-gray-700"
+            >
+              Admin Panel
             </Link>
           )}
           {currentUser ? (
