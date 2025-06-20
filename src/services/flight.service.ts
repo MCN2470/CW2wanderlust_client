@@ -9,11 +9,15 @@ interface FlightSearchParams {
   airline?: string;
 }
 
-export const searchFlights = (params: FlightSearchParams) => {
-  return axios.get(`${API_URL}/flights/search`, {
-    params: {
-      ...params,
-      include: "airlines",
-    },
+const searchFlights = async (params: FlightSearchParams) => {
+  const response = await axios.get(`${API_URL}/flights/search`, {
+    params,
   });
+  return response.data;
 };
+
+const FlightService = {
+  searchFlights,
+};
+
+export default FlightService;

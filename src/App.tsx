@@ -19,6 +19,7 @@ import BookingPage from "./pages/BookingPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import OperatorPage from "./pages/OperatorPage";
 import BookingRecordPage from "./pages/BookingRecordPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const App: React.FC = () => {
   return (
@@ -40,6 +41,9 @@ const App: React.FC = () => {
           </Route>
           <Route path="/confirmation" element={<PrivateRoute />}>
             <Route path="/confirmation" element={<BookingConfirmationPage />} />
+          </Route>
+          <Route path="/profile" element={<PrivateRoute />}>
+            <Route path="/profile" element={<ProfilePage />} />
           </Route>
           <Route path="/operator" element={<OperatorRoute />}>
             <Route path="/operator" element={<OperatorPage />} />

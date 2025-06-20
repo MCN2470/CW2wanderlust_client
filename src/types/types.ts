@@ -24,6 +24,15 @@ export interface Hotel {
   promo_message: string;
 }
 
+export interface User {
+  id: number;
+  username: string;
+  email: string;
+  role: string;
+  profile_photo_url?: string;
+  token?: string;
+}
+
 export interface Booking {
   id: number;
   user_id: number;

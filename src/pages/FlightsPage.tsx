@@ -1,21 +1,20 @@
 import React, { useState } from "react";
-import * as FlightService from "../services/flight.service";
+import FlightService from "../services/flight.service";
 import { format } from "date-fns";
 
 interface Flight {
   id: string;
-  price: {
-    total: string;
-  };
   itineraries: {
     segments: {
       departure: { iataCode: string; at: string };
       arrival: { iataCode: string; at: string };
       carrierCode: string;
       number: string;
+      duration: string;
     }[];
-    duration: string;
   }[];
+  price: { total: string };
+  validatingAirlineCodes: string[];
 }
 
 interface Dictionaries {
@@ -25,8 +24,9 @@ interface Dictionaries {
 }
 
 const formatDuration = (duration: string) => {
-  const hours = parseInt(duration.match(/(\d+)H/)?.[1] || "0");
-  const minutes = parseInt(duration.match(/(\d+)M/)?.[1] || "0");
+  const match = duration.match(/PT(\d+H)?(\d+M)?/);
+  const hours = parseInt(match?.[1]?.match(/\d+/)?.[0] || "0");
+  const minutes = parseInt(match?.[2]?.match(/\d+/)?.[0] || "0");
   return `${hours} hr ${minutes} min`;
 };
 
@@ -39,12 +39,13 @@ const FlightsPage: React.FC = () => {
   const [dictionaries, setDictionaries] = useState<Dictionaries | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
-    setFlights([]);
+    setHasSearched(true);
     try {
       const response = await FlightService.searchFlights({
         origin,
@@ -52,8 +53,20 @@ const FlightsPage: React.FC = () => {
         date,
         airline,
       });
-      setFlights(response.data.data);
-      setDictionaries(response.data.dictionaries);
+      // Handle the response format from our API
+      if (Array.isArray(response.data)) {
+        // API returns flight array directly (old format)
+        setFlights(response.data);
+        setDictionaries(null);
+      } else if (response.data && response.data.data) {
+        // Standard Amadeus format with data and dictionaries
+        setFlights(response.data.data || []);
+        setDictionaries(response.data.dictionaries || null);
+      } else {
+        // Fallback - assume response.data is the flights array
+        setFlights(response.data || []);
+        setDictionaries(null);
+      }
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -150,60 +163,66 @@ const FlightsPage: React.FC = () => {
       {error && <p className="text-red-500 text-center mt-8">{error}</p>}
 
       <div className="mt-8">
-        {flights.map((flight) => (
-          <div
-            key={flight.id}
-            className="bg-white shadow-md rounded-lg p-6 mb-4"
-          >
-            <div className="grid grid-cols-4 gap-4 items-center">
-              <div className="col-span-1">
-                <p className="text-sm font-semibold text-gray-800">
-                  {
-                    dictionaries?.carriers[
-                      flight.itineraries[0].segments[0].carrierCode
-                    ]
-                  }
-                </p>
-                <p className="text-lg font-semibold">
-                  {formatDuration(flight.itineraries[0].duration)}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {flight.itineraries[0].segments[0].departure.iataCode} →{" "}
-                  {
-                    flight.itineraries[0].segments[
-                      flight.itineraries[0].segments.length - 1
-                    ].arrival.iataCode
-                  }
-                </p>
-              </div>
-              <div className="col-span-2 text-center">
-                <p>
-                  <span className="font-semibold">Depart:</span>{" "}
-                  {format(
-                    new Date(flight.itineraries[0].segments[0].departure.at),
-                    "dd-MM-yyyy hh:mm a"
-                  )}
-                </p>
-                <p>
-                  <span className="font-semibold">Arrive:</span>{" "}
-                  {format(
-                    new Date(
+        {flights.length > 0 &&
+          flights.map((flight) => (
+            <div
+              key={flight.id}
+              className="bg-white shadow-md rounded-lg p-6 mb-4"
+            >
+              <div className="grid grid-cols-4 gap-4 items-center">
+                <div className="col-span-1">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {dictionaries?.carriers &&
+                      flight.itineraries[0].segments[0].carrierCode &&
+                      dictionaries.carriers[
+                        flight.itineraries[0].segments[0].carrierCode
+                      ]}
+                  </p>
+                  <p className="text-lg font-semibold">
+                    {formatDuration(flight.itineraries[0].segments[0].duration)}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {flight.itineraries[0].segments[0].departure.iataCode} →{" "}
+                    {
                       flight.itineraries[0].segments[
                         flight.itineraries[0].segments.length - 1
-                      ].arrival.at
-                    ),
-                    "dd-MM-yyyy hh:mm a"
-                  )}
-                </p>
-              </div>
-              <div className="col-span-1 text-right">
-                <p className="text-2xl font-bold text-blue-600">
-                  ${flight.price.total}
-                </p>
+                      ].arrival.iataCode
+                    }
+                  </p>
+                </div>
+                <div className="col-span-2 text-center">
+                  <p>
+                    <span className="font-semibold">Depart:</span>{" "}
+                    {format(
+                      new Date(flight.itineraries[0].segments[0].departure.at),
+                      "dd-MM-yyyy hh:mm a"
+                    )}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Arrive:</span>{" "}
+                    {format(
+                      new Date(
+                        flight.itineraries[0].segments[
+                          flight.itineraries[0].segments.length - 1
+                        ].arrival.at
+                      ),
+                      "dd-MM-yyyy hh:mm a"
+                    )}
+                  </p>
+                </div>
+                <div className="col-span-1 text-right">
+                  <p className="text-2xl font-bold text-blue-600">
+                    €{flight.price.total}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        {!loading && hasSearched && flights.length === 0 && (
+          <p className="text-center mt-8">
+            No flights found for the selected criteria.
+          </p>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllHotels } from "../services/hotel.service";
+import { getAllHotels, getFeaturedHotels } from "../services/hotel.service";
 import { Hotel } from "../types/types";
 import { getCurrentUser } from "../services/auth.service";
 import {
@@ -79,7 +79,7 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const hotelResponse = await getAllHotels();
+        const hotelResponse = await getFeaturedHotels();
         setHotels(hotelResponse.data);
 
         const user = getCurrentUser();

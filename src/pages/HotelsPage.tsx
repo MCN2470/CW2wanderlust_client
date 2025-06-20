@@ -113,9 +113,19 @@ const HotelsPage: React.FC = () => {
       } else {
         setHotels([]);
       }
-    } catch (err) {
-      setError("Could not fetch hotels. Please try again later.");
+    } catch (err: any) {
       console.error(err);
+      if (err.response?.status === 503) {
+        setError(
+          "Hotel search service is temporarily unavailable. The external hotel booking API is currently down. Please try again later."
+        );
+      } else if (err.response?.status >= 500) {
+        setError(
+          "Hotel search service is temporarily unavailable. Please try again later."
+        );
+      } else {
+        setError("Could not search for hotels. Please try again later.");
+      }
     } finally {
       setLoading(false);
     }
@@ -124,6 +134,9 @@ const HotelsPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6">Explore Hotels</h1>
+      <p className="text-gray-600 mb-6">
+        Search for hotels worldwide using our external booking service
+      </p>
       <div className="bg-white p-4 rounded-lg shadow-lg mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-1">
@@ -210,7 +223,15 @@ const HotelsPage: React.FC = () => {
       {error && <p className="text-red-500">{error}</p>}
 
       {!loading && !hasSearched && (
-        <p>Please enter a destination to search for hotels.</p>
+        <div className="text-center py-8">
+          <p className="text-lg text-gray-700 mb-2">
+            Please enter a destination to search for hotels.
+          </p>
+          <p className="text-sm text-gray-500">
+            We'll search our external booking partners to find you the best
+            deals.
+          </p>
+        </div>
       )}
 
       {loading && <p>Loading hotels...</p>}

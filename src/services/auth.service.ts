@@ -29,11 +29,32 @@ export const getCurrentUser = () => {
   if (!userStr) {
     return null;
   }
-  const user = JSON.parse(userStr);
-  const decodedToken: any = jwtDecode(user.token);
 
-  return {
-    ...user,
-    role: decodedToken.role,
-  };
+  try {
+    const user = JSON.parse(userStr);
+    if (!user || !user.token) {
+      return null;
+    }
+
+    const decodedToken: any = jwtDecode(user.token);
+
+    // Check if token is expired
+    if (decodedToken.exp * 1000 < Date.now()) {
+      logout(); // Use logout function to also dispatch event
+      return null;
+    }
+
+    // The token is the source of truth for id and role
+    return {
+      ...user,
+      id: decodedToken.id,
+      role: decodedToken.role,
+    };
+  } catch (error) {
+    console.error(
+      "Failed to parse user from localStorage or decode token",
+      error
+    );
+    return null;
+  }
 };
