@@ -22,6 +22,14 @@ export const getHotels = (
   });
 };
 
+export const getAllHotels = () => {
+  return axios.get(`${API_URL}/featured`);
+};
+
+export const getHotelById = (id: string) => {
+  return axios.get(`${API_URL}/${id}`);
+};
+
 export const addHotel = (hotelData: any, token: string) => {
   return axios.post(`${API_URL}/hotels`, hotelData, {
     headers: {
