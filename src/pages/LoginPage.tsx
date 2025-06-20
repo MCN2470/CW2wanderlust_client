@@ -12,7 +12,7 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     setError(null);
     try {
-      await AuthService.login({ email, password });
+      await AuthService.login(email, password);
       navigate("/");
       window.location.reload(); // To refresh navbar state
     } catch (err: any) {

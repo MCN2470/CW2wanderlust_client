@@ -14,6 +14,15 @@ interface BookingData {
   add_on_taxi: boolean;
 }
 
+export const getAllBookings = async (token: string) => {
+  const response = await axios.get(API_URL, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
 export const createBooking = (bookingData: BookingData) => {
   const user = getCurrentUser();
   const token = user?.token;

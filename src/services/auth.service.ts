@@ -7,8 +7,11 @@ export const register = (userData: any) => {
   return axios.post(`${API_URL}/users/register`, userData);
 };
 
-export const login = async (userData: any) => {
-  const response = await axios.post(`${API_URL}/users/login`, userData);
+export const login = async (email: string, password: string) => {
+  const response = await axios.post(`${API_URL}/users/login`, {
+    email,
+    password,
+  });
   if (response.data.token) {
     localStorage.setItem("user", JSON.stringify(response.data));
     window.dispatchEvent(new Event("authChange"));

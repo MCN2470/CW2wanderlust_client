@@ -4,7 +4,6 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import FlightsPage from "./pages/FlightsPage";
-import AddHotelPage from "./pages/AddHotelPage";
 import HotelsPage from "./pages/HotelsPage";
 import Navbar from "./components/Navbar";
 import OperatorRoute from "./components/auth/OperatorRoute";
@@ -18,7 +17,8 @@ import FavoritesPage from "./pages/FavoritesPage";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import BookingPage from "./pages/BookingPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
-import AdminPage from "./pages/AdminPage";
+import OperatorPage from "./pages/OperatorPage";
+import BookingRecordPage from "./pages/BookingRecordPage";
 
 const App: React.FC = () => {
   return (
@@ -41,13 +41,13 @@ const App: React.FC = () => {
           <Route path="/confirmation" element={<PrivateRoute />}>
             <Route path="/confirmation" element={<BookingConfirmationPage />} />
           </Route>
-          <Route path="/admin" element={<OperatorRoute />}>
-            <Route path="/admin" element={<AdminPage />} />
+          <Route path="/operator" element={<OperatorRoute />}>
+            <Route path="/operator" element={<OperatorPage />} />
           </Route>
 
           {/* Operator Routes */}
           <Route element={<OperatorRoute />}>
-            <Route path="/add-hotel" element={<AddHotelPage />} />
+            <Route path="/booking-records" element={<BookingRecordPage />} />
           </Route>
 
           <Route path="/login" element={<LoginPage />} />
