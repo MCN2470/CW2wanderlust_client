@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import * as FlightService from "../services/flight.service";
+import { format } from "date-fns";
 
 interface Flight {
   id: string;
@@ -13,14 +14,29 @@ interface Flight {
       carrierCode: string;
       number: string;
     }[];
+    duration: string;
   }[];
 }
+
+interface Dictionaries {
+  carriers: {
+    [key: string]: string;
+  };
+}
+
+const formatDuration = (duration: string) => {
+  const hours = parseInt(duration.match(/(\d+)H/)?.[1] || "0");
+  const minutes = parseInt(duration.match(/(\d+)M/)?.[1] || "0");
+  return `${hours} hr ${minutes} min`;
+};
 
 const FlightsPage: React.FC = () => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
+  const [airline, setAirline] = useState("");
   const [flights, setFlights] = useState<Flight[]>([]);
+  const [dictionaries, setDictionaries] = useState<Dictionaries | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -34,8 +50,10 @@ const FlightsPage: React.FC = () => {
         origin,
         destination,
         date,
+        airline,
       });
       setFlights(response.data.data);
+      setDictionaries(response.data.dictionaries);
     } catch (err: any) {
       setError(
         err.response?.data?.message ||
@@ -103,6 +121,22 @@ const FlightsPage: React.FC = () => {
             required
           />
         </div>
+        <div className="flex-1">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="airline"
+          >
+            Airline (optional)
+          </label>
+          <input
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="airline"
+            type="text"
+            placeholder="e.g., BA"
+            value={airline}
+            onChange={(e) => setAirline(e.target.value)}
+          />
+        </div>
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
           type="submit"
@@ -121,9 +155,19 @@ const FlightsPage: React.FC = () => {
             key={flight.id}
             className="bg-white shadow-md rounded-lg p-6 mb-4"
           >
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-lg font-bold">
+            <div className="grid grid-cols-4 gap-4 items-center">
+              <div className="col-span-1">
+                <p className="text-sm font-semibold text-gray-800">
+                  {
+                    dictionaries?.carriers[
+                      flight.itineraries[0].segments[0].carrierCode
+                    ]
+                  }
+                </p>
+                <p className="text-lg font-semibold">
+                  {formatDuration(flight.itineraries[0].duration)}
+                </p>
+                <p className="text-sm text-gray-600">
                   {flight.itineraries[0].segments[0].departure.iataCode} →{" "}
                   {
                     flight.itineraries[0].segments[
@@ -131,15 +175,31 @@ const FlightsPage: React.FC = () => {
                     ].arrival.iataCode
                   }
                 </p>
-                <p className="text-sm text-gray-600">
-                  {flight.itineraries[0].segments.length - 1} stop(s)
+              </div>
+              <div className="col-span-2 text-center">
+                <p>
+                  <span className="font-semibold">Depart:</span>{" "}
+                  {format(
+                    new Date(flight.itineraries[0].segments[0].departure.at),
+                    "dd-MM-yyyy hh:mm a"
+                  )}
+                </p>
+                <p>
+                  <span className="font-semibold">Arrive:</span>{" "}
+                  {format(
+                    new Date(
+                      flight.itineraries[0].segments[
+                        flight.itineraries[0].segments.length - 1
+                      ].arrival.at
+                    ),
+                    "dd-MM-yyyy hh:mm a"
+                  )}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="col-span-1 text-right">
                 <p className="text-2xl font-bold text-blue-600">
-                  €{flight.price.total}
+                  ${flight.price.total}
                 </p>
-                <p className="text-sm text-gray-600">Total Price</p>
               </div>
             </div>
           </div>
