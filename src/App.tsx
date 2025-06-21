@@ -41,8 +41,11 @@ const App: React.FC = () => {
           <Route path="/booking" element={<PrivateRoute />}>
             <Route path="/booking" element={<BookingPage />} />
           </Route>
-          <Route path="/confirmation" element={<PrivateRoute />}>
-            <Route path="/confirmation" element={<BookingConfirmationPage />} />
+          <Route path="/booking-confirmation" element={<PrivateRoute />}>
+            <Route
+              path="/booking-confirmation"
+              element={<BookingConfirmationPage />}
+            />
           </Route>
           <Route path="/profile" element={<PrivateRoute />}>
             <Route path="/profile" element={<ProfilePage />} />

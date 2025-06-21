@@ -53,15 +53,21 @@ const FlightsPage: React.FC = () => {
         date,
         airline,
       });
+      console.log("Flight response from API:", response.data);
+      console.log("Has data property:", !!response.data.data);
+      console.log("Has dictionaries property:", !!response.data.dictionaries);
+      console.log("Is array:", Array.isArray(response.data));
+
       // Handle the response format from our API
-      if (Array.isArray(response.data)) {
+      if (response.data && response.data.data && response.data.dictionaries) {
+        // Standard Amadeus format with data and dictionaries
+        console.log("Using standard Amadeus format");
+        setFlights(response.data.data || []);
+        setDictionaries(response.data.dictionaries || null);
+      } else if (Array.isArray(response.data)) {
         // API returns flight array directly (old format)
         setFlights(response.data);
         setDictionaries(null);
-      } else if (response.data && response.data.data) {
-        // Standard Amadeus format with data and dictionaries
-        setFlights(response.data.data || []);
-        setDictionaries(response.data.dictionaries || null);
       } else {
         // Fallback - assume response.data is the flights array
         setFlights(response.data || []);
@@ -173,10 +179,14 @@ const FlightsPage: React.FC = () => {
                 <div className="col-span-1">
                   <p className="text-sm font-semibold text-gray-800">
                     {dictionaries?.carriers &&
-                      flight.itineraries[0].segments[0].carrierCode &&
-                      dictionaries.carriers[
-                        flight.itineraries[0].segments[0].carrierCode
-                      ]}
+                    flight.itineraries[0].segments[0].carrierCode &&
+                    dictionaries.carriers[
+                      flight.itineraries[0].segments[0].carrierCode
+                    ]
+                      ? dictionaries.carriers[
+                          flight.itineraries[0].segments[0].carrierCode
+                        ]
+                      : flight.itineraries[0].segments[0].carrierCode}
                   </p>
                   <p className="text-lg font-semibold">
                     {formatDuration(flight.itineraries[0].segments[0].duration)}
