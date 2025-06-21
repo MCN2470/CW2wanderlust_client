@@ -43,9 +43,19 @@ const Navbar: React.FC = () => {
           <Link to="/flights" className="mr-4">
             Flights
           </Link>
+          {currentUser && (
+            <Link to="/messages" className="mr-4">
+              Messages
+            </Link>
+          )}
           {currentUser && currentUser.role === "operator" && (
             <Link to="/booking-records" className="mr-4">
               Booking Record
+            </Link>
+          )}
+          {currentUser && currentUser.role === "operator" && (
+            <Link to="/operator-messages" className="mr-4">
+              Manage Messages
             </Link>
           )}
           {currentUser && currentUser.role === "operator" && (

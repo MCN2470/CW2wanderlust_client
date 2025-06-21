@@ -20,6 +20,8 @@ import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import OperatorPage from "./pages/OperatorPage";
 import BookingRecordPage from "./pages/BookingRecordPage";
 import ProfilePage from "./pages/ProfilePage";
+import MessagesPage from "./pages/MessagesPage";
+import OperatorMessagesPage from "./pages/OperatorMessagesPage";
 
 const App: React.FC = () => {
   return (
@@ -45,6 +47,9 @@ const App: React.FC = () => {
           <Route path="/profile" element={<PrivateRoute />}>
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
+          <Route path="/messages" element={<PrivateRoute />}>
+            <Route path="/messages" element={<MessagesPage />} />
+          </Route>
           <Route path="/operator" element={<OperatorRoute />}>
             <Route path="/operator" element={<OperatorPage />} />
           </Route>
@@ -52,6 +57,10 @@ const App: React.FC = () => {
           {/* Operator Routes */}
           <Route element={<OperatorRoute />}>
             <Route path="/booking-records" element={<BookingRecordPage />} />
+            <Route
+              path="/operator-messages"
+              element={<OperatorMessagesPage />}
+            />
           </Route>
 
           <Route path="/login" element={<LoginPage />} />
